@@ -1,33 +1,34 @@
 import streamlit as st
-from langchain.llms.bedrock import Bedrock
+import boto3
+from langchain.llms import Bedrock
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
-import boto3
+
 
 # Initialize Bedrock client
-bedrock_runtime = boto3.client(
+bedrock_client = boto3.client(
     service_name='bedrock-runtime',
-    region_name='us-east-1'  # replace with your preferred region
+    region_name='us-east-1'  # Replace with your preferred region
 )
 
-# Initialize Claude model
+# Initialize Bedrock LLM
 llm = Bedrock(
-    model_id="anthropic.claude-v2",
-    client=bedrock_runtime,
-    model_kwargs={"max_tokens_to_sample": 500}
+    model_id="amazon.titan-text-express-v1",
+    client=bedrock_client,
+    model_kwargs={"maxTokenCount": 512, "temperature": 0.7}
 )
 
 # Create a prompt template
 prompt_template = PromptTemplate(
     input_variables=["topic"],
-    template="Human: Write a short paragraph about {topic}. \n \nAssistant:"
+    template="Write a short paragraph about {topic}."
 )
 
 # Create an LLMChain
 chain = LLMChain(llm=llm, prompt=prompt_template)
 
 # Streamlit app
-st.title("Claude on Amazon Bedrock Demo")
+st.title("Titan Text G1 - Express Demo")
 
 # User input
 topic = st.text_input("Enter a topic:")
@@ -37,4 +38,5 @@ if topic:
     response = chain.run(topic)
     
     # Display response
+    st.write("Generated Response:")
     st.write(response)
